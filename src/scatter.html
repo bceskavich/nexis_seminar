@@ -42,7 +42,7 @@
         font-size: 11px;
       }
 
-      rect:hover {
+      circle:hover {
         fill: orange;
       }
     </style>
@@ -116,32 +116,27 @@
 
         // Step 1: selectAll.data.enter.append
         // >> Loops through the dataset and appends a rectangle for each value
-        chart.selectAll('rect')
+        chart.selectAll('circle')
           .data(dataset)
           .enter()
-          .append('rect')
+          .append('circle')
 
           // Step 2: X & Y
-          // >> X - Places the bars in horizontal order, based on number of
-          //        points & the width of the chart
-          // >> Y - Places vertically based on scale
-          .attr('x', function(d, i){
-            return xScale(d.city);
+          // >> cx - Places the points horizontally
+          // >> cy - Places vertically based on scale
+          // >> r - Defines width based on snow totals
+          .attr('cx', function(d, i){
+            return xScale(d.city) + 85;
           })
-          .attr('y', function(d){
+          .attr('cy', function(d){
             return yScale(d.snow);
           })
-
-          // Step 3: Height & Width
-          // >> Width - Based on barpadding and number of points in dataset
-          // >> Height - Scale and height of the chart area
-          .attr('width', (width / dataset.length) - barPadding)
-          .attr('height', function(d){
-            return height - yScale(d.snow);
+          .attr('r', function(d){
+            return d.snow / 3;
           })
           .attr('fill', 'steelblue')
 
-          // Step 4: Info for hover interaction
+          // Step 3: Info for hover interaction
           .attr('class', function(d){
             return d.city;
           })
@@ -172,7 +167,7 @@
         // On document load, call the render() function to load the graph
         render();
 
-        $('rect').mouseenter(function(){
+        $('circle').mouseenter(function(){
           $('#city').html(this.className.animVal);
           $('#inches').html($(this).attr('id'));
         });

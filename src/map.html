@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>D3</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="js/d3.v3.min.js"></script>
+    <script src="http://d3js.org/queue.v1.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+        font-family: 'Avenir';
+      }
+
+      h1,
+      button {
+        margin-left: 25px;
+        text-align: left;
+      }
+
+      button {
+        margin-bottom: 25px;
+      }
+
+      .main {
+        margin: 0px 25px;
+      }
+
+      svg {
+        border: 1px dotted black;
+        padding: 20px 40px;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+      }
+
+      text,
+      .axis text {
+        font-size: 11px;
+      }
+
+      .counties {
+        fill: none;
+      }
+
+      .states {
+        fill: none;
+        stroke: #fff;
+        stroke-linejoin: round;
+      }
+
+      .none { fill: #e2b6a8; }
+      .d0 { fill: #d3927d; }
+      .d1 { fill: #c56d51; }
+      .d2 { fill: #b64926; }
+      .d3 { fill: #89371c; }
+      .d4 { fill: #5b2513; }
+
+      .none:hover,
+      .d0:hover,
+      .d1:hover,
+      .d2:hover,
+      .d3:hover,
+      .d4:hover {
+        fill: orange;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Drought in the US, November 2008</h1>
+
+    <div class="main">
+      <p><strong>Drought Level</strong> - <span id="level"></span></p>
+    </div>
+
+    <script type="text/javascript">
+
+      function render(){
+
+        // Dimensions for the chart: height, width
+        var height = 600,
+            width = 1000
+
+        // Creates a map object and a scale
+        var droughtRate = d3.map();
+        var quantize = d3.scale.quantize()
+          .domain([0, 5])
+          .range(d3.range(6).map(function(i) {
+            if (i === 0){
+              return "none";
+            }
+            else {
+              return "d" + (i-1);
+            }
+          }));
+
+        // Creates a map projection and overlays a drawable path
+        var projection = d3.geo.albersUsa()
+          .scale(width)
+          .translate([width / 2, height / 2]);
+
+        var path = d3.geo.path()
+          .projection(projection);
+
+        // Creates chart area
+        var chart = d3.select('.main')
+          .append('svg')
+          .attr('width', width)
+          .attr('height', height)
+
+        // Queue allows us to load data before creating the graph
+        queue()
+          .defer(d3.json, "data/us.json")
+          .defer(d3.csv, "data/data.csv", function(d) {
+            droughtRate.set(d.id, +d.level);
+          })
+          .await(ready);
+
+        // Append the blank chart first
+        function ready(error, us) {
+          chart.append("g")
+            .attr("class", "counties")
+            .selectAll("path")
+            .data(topojson.feature(us, us.objects.counties).features)
+            .enter().append("path")
+            // Give class to each county based on drought rate
+            .attr("class", function(d) {
+              return quantize(droughtRate.get(d.id));
+            })
+            .attr("d", path)
+            .attr("onmouseover", "appendLevel(this);");
+
+          // Defines state areas
+          chart.append("path")
+            .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+            .attr("class", "states")
+            .attr("d", path);
+        }
+      }
+
+      // Interactivity - changes level status when hovering over the map
+      var appendLevel = function(item){
+        var droughtLevel = item.getAttribute("class");
+
+        if (droughtLevel == "none"){
+          $("#level").html("No Drought");
+        }
+        else if (droughtLevel == "d0"){
+          $("#level").html("Abnormally Dry");
+        }
+        else if (droughtLevel == "d1"){
+          $("#level").html("Moderate Drought");
+        }
+        else if (droughtLevel == "d2"){
+          $("#level").html("Severe Drought");
+        }
+        else if (droughtLevel == "d3"){
+          $("#level").html("Extreme Drought");
+        }
+        else if (droughtLevel == "d4"){
+          $("#level").html("Exceptional Drought");
+        }
+      };
+
+      $(function(){
+        // On document load, call the render() function to load the graph
+        render();
+      });
+
+    </script>
+  </body>
+</html>
