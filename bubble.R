@@ -11,6 +11,7 @@ symbols(crime$murder, crime$burglary,
   fg="white",
   bg="red",
   xlab="Murder Rate",
-  ylab="Burglary Rate")
+  ylab="Burglary Rate"
+)
 
 text(crime$murder, crime$burglary, crime$state, cex=0.5)
