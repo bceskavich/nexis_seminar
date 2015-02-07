@@ -1,5 +1,4 @@
-# NEXIS-X
-## Data Visualization - An Introduction
+# Data Visualization NEXIS-X
 
 This repo contains the source code used during my NEXIS-X seminar on data visualization, hosted at Syracuse University on Feb. 6, 2015. You can **[download the presentation slides here](http://bit.ly/nexisxdataviz)**.
 
